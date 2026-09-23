@@ -44,6 +44,7 @@ export const works = [
     desc: '逐章通关解说 + 隐藏路线考据 · 全结局收集',
     url: 'https://www.bilibili.com/video/BV1XTqKBaED9/?spm_id_from=333.337.search-card.all.click',
     gradient: 'linear-gradient(135deg, #d4a5f7, #8ec5fc)',
+    skills: ['魔女裁判', '游戏实况', '推理考据'],
   },
   {
     emoji: '🗝️',
@@ -51,6 +52,7 @@ export const works = [
     desc: '日语原文比对 + 多语言考据 + 黑幕推测',
     url: '#',
     gradient: 'linear-gradient(135deg, #ff9ab5, #6b4cff)',
+    skills: ['暗号解读', '神秘学', '考据'],
   },
   {
     emoji: '🎨',
@@ -58,6 +60,7 @@ export const works = [
     desc: 'エマ / ヒロ / ココ 角色同人 · 梅まろ风临摹',
     url: 'https://twiman.net/search?q=%E3%81%BE%E3%81%AE%E3%81%95%E3%81%B0&m=tweet&o=1',
     gradient: 'linear-gradient(135deg, #fce0a6, #ff6b94)',
+    skills: ['同人插画', '哥特萝莉', '梅まろ'],
   },
   {
     emoji: '📝',
@@ -65,6 +68,42 @@ export const works = [
     desc: '每话剧情分析 · 伏笔回收 · 魔法系统解析',
     url: 'https://www.bilibili.com/video/BV1Do4S6hEan/?spm_id_from=333.337.search-card.all.click',
     gradient: 'linear-gradient(135deg, #c9ecd4, #6b4cff)',
+    skills: ['TypeScript', 'React', 'Blog'],
+  },
+];
+
+// ============ 最近动态 / Timeline ============
+// 从上往下按时间倒序排列，最新的在最上面
+export const timeline = [
+  {
+    date: '2026-09-23',
+    emoji: '🗝️',
+    text: '解读出 658 号房暗号：「樱羽」为真·魔女后裔',
+    tag: '考据',
+  },
+  {
+    date: '2026-09-20',
+    emoji: '🎨',
+    text: '临摹了梅まろ的エマ同人，发到了 Pixiv',
+    tag: '同人',
+  },
+  {
+    date: '2026-09-15',
+    emoji: '🔮',
+    text: '全流程实况更新到第 3 章 · 魔女裁判篇',
+    tag: '实况',
+  },
+  {
+    date: '2026-09-10',
+    emoji: '📖',
+    text: '牢屋敷地下室的隐藏房间考据完成，整理进 Blog',
+    tag: '考据',
+  },
+  {
+    date: '2026-09-03',
+    emoji: '🌸',
+    text: '入坑一周年！开了这个导航页纪念',
+    tag: '碎碎念',
   },
 ];
 

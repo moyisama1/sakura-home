@@ -21,13 +21,4 @@
 - 不要遗留未使用的 import — 比如从方案 B 回退时 `useState` 可能没用了
 - 图片放 `public/` 目录引用，不要用外部 API URL（部署后会失效）
 
-# 工作流规则
-每次写完 / 修改代码后，必须执行：
 
-1. npm run build 确保构建通过
-
-2. GetDiagnostics 看有没有 IDE 报错
-
-3. 调用 TRAE-code-review skill review 本次改动
-
-4. 修复 review 发现的问题后才能 commit/push

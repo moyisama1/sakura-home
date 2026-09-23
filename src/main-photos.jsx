@@ -1,10 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import AboutPage from './pages/AboutPage.jsx';
+import PhotosPage from './pages/PhotosPage.jsx';
 import './index.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <AboutPage />
+    <PhotosPage />
   </React.StrictMode>,
 );

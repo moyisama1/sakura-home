@@ -17,7 +17,7 @@ export default function LinksList() {
   }, []);
 
   return (
-    <section className="section">
+    <section id="share" className="section">
       <h2 className="section-title">
         <span className="title-icon">🍡</span>
         联系我

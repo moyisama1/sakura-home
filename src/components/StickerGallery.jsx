@@ -45,7 +45,7 @@ export default function StickerGallery() {
   }, [preview]);
 
   return (
-    <section className="section stickers-section">
+    <section id="photos" className="section stickers-section">
       <h2 className="section-title">
         <span className="title-icon">🍡</span>
         魔法贴纸库
