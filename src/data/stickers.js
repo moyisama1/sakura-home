@@ -5,7 +5,7 @@
 
 export const stickers = [
   // 示例占位（把 public/stickers/ 里的图片放好后，改 file 和 tag 即可）
-  // { file: '001.jpg', tag: '搞怪' },
+   { file: 'F1965CD746B635BD42D16535D0C562F1.gif', tag: '搞怪' },
   // { file: '002.gif', tag: '卖萌' },
   // { file: '003.png', tag: '颜艺' },
 ];
