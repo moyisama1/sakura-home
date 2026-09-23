@@ -837,64 +837,232 @@ img {
   .status-badge {
     background: rgba(255, 220, 235, 0.92);
   }
+}
 
-  /* --- body::before 简化：多层 radial-gradient 改为单层 linear-gradient --- */
-  body::before {
-    background: linear-gradient(
-      180deg,
-      rgba(26, 16, 37, 0.55),
-      rgba(26, 16, 37, 0.4) 30%,
-      rgba(26, 16, 37, 0.55) 70%,
-      rgba(26, 16, 37, 0.75)
-    );
-  }
+/* ============================================
+   🍡 魔法贴纸库 Sticker Gallery
+   ============================================ */
+.stickers-section .sticker-count {
+  font-size: 0.7em;
+  margin-left: 0.4em;
+  padding: 2px 8px;
+  background: linear-gradient(135deg, var(--sakura-200), var(--lavender));
+  color: #fff;
+  border-radius: 999px;
+  font-weight: 600;
+  vertical-align: middle;
+}
 
-  /* --- 关闭非必要无限动画（只在移动端关，PC 保留） --- */
-  .avatar-ring {
-    animation: none !important;
-  }
-  .avatar-ring::after {
-    /* 保持视觉：纯色外圈代替 conic-gradient 旋转 */
-    background: conic-gradient(
-      from 0deg,
-      var(--sakura-300),
-      var(--lavender),
-      var(--peach),
-      var(--mint),
-      var(--sakura-300)
-    );
-    -webkit-mask: radial-gradient(#fff 60%, transparent 62%);
-    mask: radial-gradient(#fff 60%, transparent 62%);
-    background: #fff;
-  }
-  .nickname .cn-name {
-    animation: none !important;
-  }
-  .section-title::after {
-    animation: none !important;
-  }
-  .floating-decor {
-    display: none !important;
-  }
-  .online-dot {
-    animation-duration: 3s !important; /* 降低 pulseDot 频率 */
-  }
+.tag-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 20px;
+}
 
-  /* --- content-visibility：折叠屏外 section，省绘制 --- */
-  .section {
-    content-visibility: auto;
-    contain-intrinsic-size: 300px;
-  }
+.tag-filter-btn {
+  font-size: 0.85em;
+  padding: 4px 14px;
+  border-radius: 999px;
+  border: 1.5px solid var(--sakura-300);
+  background: transparent;
+  color: var(--sakura-500);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.tag-filter-btn:hover {
+  background: rgba(184, 54, 132, 0.08);
+  transform: translateY(-1px);
+}
+.tag-filter-btn.active {
+  background: linear-gradient(135deg, var(--sakura-400), var(--lavender));
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 3px 10px rgba(184, 54, 132, 0.25);
+}
 
-  /* --- 标签入场动画：移动端关闭错落 delay（省计算） --- */
-  .tag {
-    animation-delay: 0ms !important;
-  }
+.stickers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 14px;
+}
 
-  /* --- 移动端滚动更流畅：禁用 smooth scroll --- */
-  html {
-    scroll-behavior: auto;
-  }
+.sticker-card {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 12px;
+  overflow: hidden;
+  background: linear-gradient(135deg, rgba(251, 226, 238, 0.4), rgba(184, 54, 132, 0.08));
+  border: 1.5px solid rgba(184, 54, 132, 0.15);
+  cursor: pointer;
+  transition: transform 0.25s, box-shadow 0.25s;
+  animation: fadeUp 0.5s ease both;
+}
+.sticker-card:hover {
+  transform: translateY(-4px) scale(1.03);
+  box-shadow: 0 8px 24px rgba(184, 54, 132, 0.3);
+  border-color: var(--sakura-400);
+}
+.sticker-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 8px;
+  background: #fff;
+}
+.sticker-tag {
+  position: absolute;
+  bottom: 4px;
+  left: 4px;
+  font-size: 0.65em;
+  padding: 2px 8px;
+  background: linear-gradient(135deg, var(--sakura-400), var(--lavender));
+  color: #fff;
+  border-radius: 999px;
+  opacity: 0.95;
+}
+
+.hint {
+  text-align: center;
+  padding: 20px;
+  color: var(--text-muted);
+  font-size: 0.95em;
+}
+.hint.error { color: #d9476a; }
+
+/* 预览遮罩 */
+.preview-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(26, 16, 37, 0.85);
+  backdrop-filter: blur(6px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeUp 0.2s ease both;
+}
+.preview-box {
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  max-width: 90vw;
+  max-height: 90vh;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+.preview-box img {
+  max-width: 70vw;
+  max-height: 60vh;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #f5f5f5, #e8e8e8);
+}
+.preview-info { margin-top: 14px; }
+.preview-fname { font-weight: 600; color: var(--text-dark); margin: 4px 0; }
+.preview-meta { font-size: 0.8em; color: var(--text-muted); }
+.preview-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 12px;
+}
+.preview-btn {
+  padding: 8px 20px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 600;
+  background: linear-gradient(135deg, var(--sakura-400), var(--lavender));
+  color: #fff;
+  text-decoration: none;
+  font-size: 0.9em;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.preview-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(184, 54, 132, 0.4); }
+.preview-btn.ghost {
+  background: transparent;
+  color: var(--sakura-500);
+  border: 1.5px solid var(--sakura-300);
+}
+
+/* 上传表单 */
+.admin-section { border-top: 2px dashed var(--sakura-200); }
+.upload-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 480px;
+  margin: 16px auto 0;
+}
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.form-row > span {
+  font-size: 0.85em;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+.form-row input[type="text"],
+.form-row input[type="password"],
+.form-row input[type="file"] {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1.5px solid var(--sakura-200);
+  background: rgba(255, 255, 255, 0.9);
+  font-family: inherit;
+  font-size: 0.95em;
+  color: var(--text-dark);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.form-row input:focus {
+  outline: none;
+  border-color: var(--sakura-400);
+  box-shadow: 0 0 0 3px rgba(184, 54, 132, 0.15);
+}
+.form-row input[type="file"] {
+  padding: 8px;
+  cursor: pointer;
+}
+.file-info {
+  font-size: 0.78em;
+  color: var(--text-muted);
+}
+.upload-btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--sakura-400), var(--lavender));
+  color: #fff;
+  font-family: inherit;
+  font-size: 1em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+}
+.upload-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(184, 54, 132, 0.4);
+}
+.upload-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.form-msg {
+  text-align: center;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 0.9em;
+}
+.form-msg.ok { background: rgba(136, 200, 176, 0.18); color: #2d8a6b; }
+.form-msg.err { background: rgba(217, 71, 106, 0.15); color: #d9476a; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sticker-card { animation: none; }
 }
 
 /* ---------- 深色模式 ---------- */
