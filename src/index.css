@@ -809,6 +809,94 @@ img {
   .floating-decor { display: none !important; }
 }
 
+/* ============================================
+   移动端性能优化（≤ 768px）
+   - backdrop-filter → 半透明纯色背景
+   - 关闭非必要无限动画（ringSpin / waveScroll / nicknameFlow / floatY）
+   - body::before 简化为单渐变，去掉多层 radial-gradient
+   - section 启用 content-visibility: auto 懒渲染
+   ============================================ */
+@media (max-width: 768px) {
+  /* --- backdrop-filter 降级：移动端 GPU 扛不住 --- */
+  .profile-card,
+  .tag-cloud,
+  .link-btn,
+  .status-badge {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  .profile-card {
+    background: rgba(255, 255, 255, 0.94);
+  }
+  .tag-cloud {
+    background: rgba(255, 255, 255, 0.94);
+  }
+  .link-btn {
+    background: rgba(255, 255, 255, 0.92);
+  }
+  .status-badge {
+    background: rgba(255, 220, 235, 0.92);
+  }
+
+  /* --- body::before 简化：多层 radial-gradient 改为单层 linear-gradient --- */
+  body::before {
+    background: linear-gradient(
+      180deg,
+      rgba(26, 16, 37, 0.55),
+      rgba(26, 16, 37, 0.4) 30%,
+      rgba(26, 16, 37, 0.55) 70%,
+      rgba(26, 16, 37, 0.75)
+    );
+  }
+
+  /* --- 关闭非必要无限动画（只在移动端关，PC 保留） --- */
+  .avatar-ring {
+    animation: none !important;
+  }
+  .avatar-ring::after {
+    /* 保持视觉：纯色外圈代替 conic-gradient 旋转 */
+    background: conic-gradient(
+      from 0deg,
+      var(--sakura-300),
+      var(--lavender),
+      var(--peach),
+      var(--mint),
+      var(--sakura-300)
+    );
+    -webkit-mask: radial-gradient(#fff 60%, transparent 62%);
+    mask: radial-gradient(#fff 60%, transparent 62%);
+    background: #fff;
+  }
+  .nickname .cn-name {
+    animation: none !important;
+  }
+  .section-title::after {
+    animation: none !important;
+  }
+  .floating-decor {
+    display: none !important;
+  }
+  .online-dot {
+    animation-duration: 3s !important; /* 降低 pulseDot 频率 */
+  }
+
+  /* --- content-visibility：折叠屏外 section，省绘制 --- */
+  .section {
+    content-visibility: auto;
+    contain-intrinsic-size: 300px;
+  }
+
+  /* --- 标签入场动画：移动端关闭错落 delay（省计算） --- */
+  .tag {
+    animation-delay: 0ms !important;
+  }
+
+  /* --- 移动端滚动更流畅：禁用 smooth scroll --- */
+  html {
+    scroll-behavior: auto;
+  }
+}
+
 /* ---------- 深色模式 ---------- */
 @media (prefers-color-scheme: dark) {
   :root {

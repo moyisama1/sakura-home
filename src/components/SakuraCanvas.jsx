@@ -2,9 +2,12 @@ import { useEffect, useRef } from 'react';
 
 /**
  * 《魔法少女ノ魔女裁判》主题粒子 · 魔法樱花 + 星尘
- * - 深粉黑色调 · 黑暗中发光的玫瑰花瓣
- * - 极细星光粒子点缀（透明小方块 + 十字星）
- * - 保留分层 + 轻柔旋转漂移，替换风脉冲为魔法飘移
+ * 性能优化：
+ *  - shadowBlur 改为离屏预渲染光晕 sprite（每帧 drawImage 零开销）
+ *  - 移动端自动降低粒子数（花瓣 18 / 星星 15）
+ *  - 移动端星星用 fillRect 替代 drawImage
+ *  - DPR 硬上限 2，避免 3x 屏过度绘制
+ *  - 页面隐藏时暂停动画
  */
 export default function SakuraCanvas() {
   const canvasRef = useRef(null);
@@ -12,14 +15,18 @@ export default function SakuraCanvas() {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { alpha: true });
     if (!ctx) return;
 
     const reduceMotion = window.matchMedia(
       '(prefers-reduced-motion: reduce)',
     ).matches;
 
-    // 深色魔法花瓣 SVG：黑边 + 深粉填充 + 粉色发光
+    const isMobile =
+      window.innerWidth < 768 ||
+      window.matchMedia('(pointer: coarse)').matches;
+
+    // ===== 花瓣 SVG 源 =====
     const petalSvg = `
       <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 28'>
         <defs>
@@ -38,17 +45,57 @@ export default function SakuraCanvas() {
         </g>
         <circle cx='12' cy='14' r='1.5' fill='rgba(255,230,240,0.9)'/>
       </svg>`;
-    const petalImg = new Image();
+
+    // ===== 离屏预渲染：带光晕的花瓣 sprite（最大尺寸 32） =====
+    // 只做一次 shadowBlur，结果缓存为 canvas，后续每帧 drawImage 即可
+    const makeGlowSprite = (maxSize = 32) => {
+      const off = document.createElement('canvas');
+      const pad = 14; // 光晕边距
+      off.width = maxSize + pad * 2;
+      off.height = maxSize * 1.2 + pad * 2;
+      const octx = off.getContext('2d');
+      if (!octx) return null;
+
+      const img = new Image();
+      img.src = `data:image/svg+xml;utf8,${encodeURIComponent(petalSvg)}`;
+      // 同步等待 dataURL 图片可用（dataURL 通常同步，但保险起见）
+      if (!img.complete) {
+        // 放弃光晕预渲染，直接用原始花瓣图
+        return null;
+      }
+      octx.shadowBlur = pad;
+      octx.shadowColor = 'rgba(216,119,170,0.55)';
+      octx.drawImage(
+        img,
+        pad,
+        pad,
+        maxSize,
+        maxSize * 1.2,
+      );
+      octx.shadowBlur = 0;
+      return { canvas: off, pad };
+    };
+
+    let glowSprite = null; // { canvas, pad }
+    let petalImg = new Image();
     petalImg.src = `data:image/svg+xml;utf8,${encodeURIComponent(petalSvg)}`;
 
-    // 十字星光（1px）
-    const crossSvg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'><g stroke='rgba(255,200,230,0.85)' stroke-width='1'><line x1='4' y1='0' x2='4' y2='8'/><line x1='0' y1='4' x2='8' y2='4'/></g></svg>`;
-    const crossImg = new Image();
-    crossImg.src = `data:image/svg+xml;utf8,${encodeURIComponent(crossSvg)}`;
+    // 等花瓣图加载完，预渲染光晕
+    const tryMakeGlow = () => {
+      if (petalImg.complete) {
+        glowSprite = makeGlowSprite(32);
+      }
+    };
+    if (petalImg.complete) {
+      tryMakeGlow();
+    } else {
+      petalImg.addEventListener('load', tryMakeGlow, { once: true });
+    }
 
     let petals = [];
     let stars = [];
     let animationId = null;
+    let isPageVisible = true;
 
     const resize = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -59,15 +106,25 @@ export default function SakuraCanvas() {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
 
-    const LAYERS = [
-      { count: 20, sizeRange: [14, 22], speedY: [0.22, 0.48], alpha: [0.35, 0.55] },
-      { count: 24, sizeRange: [10, 16], speedY: [0.52, 0.95], alpha: [0.5, 0.7] },
-      { count: 14, sizeRange: [16, 26], speedY: [0.13, 0.32], alpha: [0.68, 0.9] },
-    ];
+    // 移动端缩减粒子数
+    const LAYERS = isMobile
+      ? [
+          { count: 6, sizeRange: [14, 22], speedY: [0.22, 0.48], alpha: [0.35, 0.55] },
+          { count: 8, sizeRange: [10, 16], speedY: [0.52, 0.95], alpha: [0.5, 0.7] },
+          { count: 4, sizeRange: [16, 26], speedY: [0.13, 0.32], alpha: [0.68, 0.9] },
+        ]
+      : [
+          { count: 20, sizeRange: [14, 22], speedY: [0.22, 0.48], alpha: [0.35, 0.55] },
+          { count: 24, sizeRange: [10, 16], speedY: [0.52, 0.95], alpha: [0.5, 0.7] },
+          { count: 14, sizeRange: [16, 26], speedY: [0.13, 0.32], alpha: [0.68, 0.9] },
+        ];
+
+    const STAR_COUNT = isMobile ? 15 : 50;
 
     const rnd = (min, max) => min + Math.random() * (max - min);
 
     const createPetal = (layerCfg) => ({
+      layerCfg, // 直接存引用，避免每帧 LAYERS.find
       x: Math.random() * window.innerWidth,
       y: -30 - Math.random() * 120,
       size: rnd(layerCfg.sizeRange[0], layerCfg.sizeRange[1]),
@@ -78,7 +135,6 @@ export default function SakuraCanvas() {
       rot: Math.random() * Math.PI * 2,
       rotSpeed: rnd(-0.03, 0.03),
       alpha: rnd(layerCfg.alpha[0], layerCfg.alpha[1]),
-      // 每隔若干帧"闪一下" · 魔法发光脉冲
       glow: Math.random() * Math.PI * 2,
       glowSpeed: rnd(0.01, 0.02),
     });
@@ -86,7 +142,7 @@ export default function SakuraCanvas() {
     const createStar = () => ({
       x: Math.random() * window.innerWidth,
       y: Math.random() * window.innerHeight * 1.2,
-      size: rnd(1.5, 3.5),
+      size: rnd(isMobile ? 1.2 : 1.5, isMobile ? 2.2 : 3.5),
       speedY: rnd(0.1, 0.3),
       speedX: rnd(-0.15, 0.15),
       twinkle: Math.random() * Math.PI * 2,
@@ -103,40 +159,57 @@ export default function SakuraCanvas() {
       petals = LAYERS.flatMap((l) =>
         Array.from({ length: l.count }, () => createPetal(l)),
       );
-      stars = Array.from({ length: 50 }, createStar);
+      stars = Array.from({ length: STAR_COUNT }, createStar);
     };
 
+    // ===== 渲染循环 =====
     let timeTick = 0;
-    const frame = () => {
+    let lastFrame = 0;
+    const frameInterval = isMobile ? 1000 / 45 : 1000 / 60; // 移动端 ~45fps 也够用
+
+    const frame = (timestamp) => {
+      animationId = requestAnimationFrame(frame);
+
+      if (!isPageVisible) return;
+      if (timestamp - lastFrame < frameInterval) return;
+      lastFrame = timestamp;
+
       ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
       timeTick++;
 
-      // 魔法缓漂移：低频正弦波（代替风脉冲，更神秘）
-      const magicDrift = Math.sin(timeTick * 0.008) * 0.35 + Math.sin(timeTick * 0.017) * 0.2;
+      const magicDrift =
+        Math.sin(timeTick * 0.008) * 0.35 +
+        Math.sin(timeTick * 0.017) * 0.2;
 
       // --- 星光层（底层） ---
-      for (const s of stars) {
-        s.y += s.speedY;
-        s.x += s.speedX + Math.sin(s.twinkle * 0.5) * 0.1;
-        s.twinkle += s.twinkleSpeed;
-        if (s.y > window.innerHeight + 10) {
-          Object.assign(s, createStar());
-          s.y = -10;
+      // 移动端：直接 fillRect，零 image 解码开销
+      if (isMobile) {
+        for (const s of stars) {
+          s.y += s.speedY;
+          s.x += s.speedX + Math.sin(s.twinkle * 0.5) * 0.1;
+          s.twinkle += s.twinkleSpeed;
+          if (s.y > window.innerHeight + 10) {
+            Object.assign(s, createStar());
+            s.y = -10;
+          }
+          const a = s.alpha * (0.5 + 0.5 * Math.sin(s.twinkle));
+          ctx.fillStyle = `rgba(255,200,230,${a})`;
+          ctx.fillRect(s.x - s.size / 2, s.y - s.size / 2, s.size, s.size);
         }
-        const a = s.alpha * (0.5 + 0.5 * Math.sin(s.twinkle));
-        if (crossImg.complete) {
-          ctx.save();
-          ctx.globalAlpha = a;
-          ctx.translate(s.x, s.y);
-          ctx.drawImage(crossImg, -s.size / 2, -s.size / 2, s.size, s.size);
-          ctx.restore();
-        } else {
+      } else {
+        for (const s of stars) {
+          s.y += s.speedY;
+          s.x += s.speedX + Math.sin(s.twinkle * 0.5) * 0.1;
+          s.twinkle += s.twinkleSpeed;
+          if (s.y > window.innerHeight + 10) {
+            Object.assign(s, createStar());
+            s.y = -10;
+          }
+          const a = s.alpha * (0.5 + 0.5 * Math.sin(s.twinkle));
           ctx.save();
           ctx.globalAlpha = a;
           ctx.fillStyle = 'rgba(255,200,230,0.9)';
-          ctx.beginPath();
-          ctx.arc(s.x, s.y, s.size / 2, 0, Math.PI * 2);
-          ctx.fill();
+          ctx.fillRect(s.x - s.size / 2, s.y - s.size / 2, s.size, s.size);
           ctx.restore();
         }
       }
@@ -153,41 +226,51 @@ export default function SakuraCanvas() {
         if (p.x > window.innerWidth + 30) p.x = -20;
 
         if (p.y > window.innerHeight + 30) {
-          const layerCfg = LAYERS.find(
-            (l) =>
-              p.speedY >= l.speedY[0] &&
-              p.speedY <= l.speedY[1],
-          );
-          Object.assign(p, createPetal(layerCfg || LAYERS[1]));
+          Object.assign(p, createPetal(p.layerCfg));
           p.x = Math.random() * window.innerWidth;
         }
 
-        if (petalImg.complete) {
-          // 魔法发光脉冲
-          const glowBoost = 0.5 + 0.5 * Math.sin(p.glow);
-          ctx.save();
-          ctx.globalAlpha = p.alpha;
-          // 柔和粉色外发光
-          ctx.shadowBlur = 14 * glowBoost;
-          ctx.shadowColor = 'rgba(216,119,170,0.55)';
-          ctx.translate(p.x, p.y);
-          ctx.rotate(p.rot);
-          ctx.drawImage(petalImg, -p.size / 2, -p.size / 2, p.size, p.size * 1.2);
-          ctx.restore();
-        }
-      }
+        if (!petalImg.complete) continue;
 
-      animationId = requestAnimationFrame(frame);
+        const glowBoost = 0.7 + 0.3 * Math.sin(p.glow); // 缩小光晕脉动范围，视觉更稳
+
+        ctx.save();
+        ctx.globalAlpha = p.alpha;
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot);
+
+        if (glowSprite) {
+          // 离屏预渲染光晕 sprite：一次 shadowBlur，之后全是 drawImage
+          const pad = glowSprite.pad;
+          const w = p.size + pad * 2;
+          const h = p.size * 1.2 + pad * 2;
+          ctx.globalAlpha = p.alpha * glowBoost;
+          ctx.drawImage(glowSprite.canvas, -w / 2, -h / 2, w, h);
+        } else {
+          // 降级：不画光晕，直接花瓣
+          ctx.drawImage(petalImg, -p.size / 2, -p.size / 2, p.size, p.size * 1.2);
+        }
+
+        ctx.restore();
+      }
+    };
+
+    const onVisibilityChange = () => {
+      isPageVisible = document.visibilityState === 'visible';
+      if (isPageVisible) lastFrame = 0;
     };
 
     resize();
     init();
-    frame();
+    animationId = requestAnimationFrame(frame);
 
     window.addEventListener('resize', resize);
+    document.addEventListener('visibilitychange', onVisibilityChange);
 
     return () => {
       window.removeEventListener('resize', resize);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      petalImg.removeEventListener('load', tryMakeGlow);
       if (animationId) cancelAnimationFrame(animationId);
     };
   }, []);

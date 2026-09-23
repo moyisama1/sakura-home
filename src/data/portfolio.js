@@ -42,7 +42,7 @@ export const works = [
     emoji: '🔮',
     title: '魔女裁判 · 全流程实况',
     desc: '逐章通关解说 + 隐藏路线考据 · 全结局收集',
-    url: '#',
+    url: 'https://www.bilibili.com/video/BV1XTqKBaED9/?spm_id_from=333.337.search-card.all.click',
     gradient: 'linear-gradient(135deg, #d4a5f7, #8ec5fc)',
   },
   {
@@ -56,24 +56,24 @@ export const works = [
     emoji: '🎨',
     title: 'まのさば 同人集',
     desc: 'エマ / ヒロ / ココ 角色同人 · 梅まろ风临摹',
-    url: '#',
+    url: 'https://twiman.net/search?q=%E3%81%BE%E3%81%AE%E3%81%95%E3%81%B0&m=tweet&o=1',
     gradient: 'linear-gradient(135deg, #fce0a6, #ff6b94)',
   },
   {
     emoji: '📝',
     title: '设定考据 Blog',
     desc: '每话剧情分析 · 伏笔回收 · 魔法系统解析',
-    url: '#',
+    url: 'https://www.bilibili.com/video/BV1Do4S6hEan/?spm_id_from=333.337.search-card.all.click',
     gradient: 'linear-gradient(135deg, #c9ecd4, #6b4cff)',
   },
 ];
 
 // ============ 社交链接 ============
 export const links = [
-  { key: 'bilibili', icon: 'fa-brands fa-bilibili', label: 'B 站 · 实况录像', url: '#' },
+  { key: 'bilibili', icon: 'fa-brands fa-bilibili', label: 'B 站 · 实况录像', url: 'https://www.bilibili.com/video/BV1XTqKBaED9/?spm_id_from=333.337.search-card.all.click' },
   { key: 'github', icon: 'fa-brands fa-github', label: 'GitHub · 考据笔记', url: '#' },
   { key: 'twitter', icon: 'fa-brands fa-x-twitter', label: 'Twitter · 同人插图', url: '#' },
   { key: 'weibo', icon: 'fa-brands fa-weibo', label: '微博 · 碎碎念', url: '#' },
-  { key: 'steam', icon: 'fa-brands fa-steam', label: 'Steam · 库', url: '#' },
-  { key: 'email', icon: 'fa-solid fa-envelope', label: '邮箱 · 考据交流', url: 'mailto:hello@example.com' },
+  { key: 'steam', icon: 'fa-brands fa-steam', label: 'Steam · 库', url: 'https://steamcommunity.com/profiles/76561198835418480/' },
+  { key: 'email', icon: 'fa-solid fa-envelope', label: '邮箱 · 考据交流', url: 'mailto:2383899071@qq.com' },
 ];
