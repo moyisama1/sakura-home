@@ -1,10 +1,12 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { stickers } from '../data/stickers.js';
 
 /**
  * 纯静态贴纸浏览网格（方案 A：无后端）
  * 图片放 public/stickers/，数据在 src/data/stickers.js
  * 点击打开预览大图 · 右键/长按保存 · 按 tag 筛选
+ * 预览遮罩用 React Portal 渲染到 body 根节点，避免被 container 遮挡
  */
 export default function StickerGallery() {
   const [activeTag, setActiveTag] = useState('');
@@ -25,10 +27,21 @@ export default function StickerGallery() {
   // 构造完整 URL（Vite 开发时 / 部署后 都兼容）
   const urlOf = (file) => {
     if (!file) return '';
-    // 如果已经是 http(s) 完整 URL，直接返回
     if (/^https?:\/\//.test(file)) return file;
     return `/stickers/${file}`;
   };
+
+  // 打开预览时锁 body 滚动 + ESC 关闭
+  useEffect(() => {
+    if (!preview) return;
+    document.body.style.overflow = 'hidden';
+    const onKey = (e) => { if (e.key === 'Escape') setPreview(null); };
+    window.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [preview]);
 
   return (
     <section className="section stickers-section">
@@ -96,12 +109,9 @@ export default function StickerGallery() {
         </div>
       )}
 
-      {/* 预览遮罩 */}
-      {preview && (
-        <div
-          className="preview-overlay"
-          onClick={() => setPreview(null)}
-        >
+      {/* 预览遮罩 → Portal 到 body 根节点，彻底脱离 stacking context */}
+      {preview && createPortal(
+        <div className="preview-overlay" onClick={() => setPreview(null)}>
           <div className="preview-box" onClick={(e) => e.stopPropagation()}>
             <img src={preview.url} alt={preview.file} />
             <div className="preview-info">
@@ -124,7 +134,8 @@ export default function StickerGallery() {
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </section>
   );

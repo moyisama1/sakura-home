@@ -931,13 +931,14 @@ img {
 }
 .hint.error { color: #d9476a; }
 
-/* 预览遮罩 */
+/* ========= 预览遮罩（Portal 到 body，z-index 必须够高） ========= */
 .preview-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(26, 16, 37, 0.85);
-  backdrop-filter: blur(6px);
-  z-index: 1000;
+  background: rgba(26, 16, 37, 0.88);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 9999; /* 够大，不被任何容器 stacking context 盖住 */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -948,19 +949,31 @@ img {
   background: #fff;
   border-radius: 16px;
   padding: 20px;
-  max-width: 90vw;
-  max-height: 90vh;
+  width: auto;
+  max-width: min(85vw, 480px);
+  max-height: calc(90vh - 40px); /* 减去 padding */
+  display: flex;
+  flex-direction: column;
   text-align: center;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  overflow: hidden; /* 整体不溢出 */
 }
 .preview-box img {
-  max-width: 70vw;
-  max-height: 60vh;
+  /* 关键：同时限宽限高，正方形/长图都不会撑爆 box */
+  max-width: 100%;
+  max-height: calc(90vh - 200px); /* 给下方 info 留 ~180px */
+  width: auto;
+  height: auto;
+  object-fit: contain;
   border-radius: 8px;
   background: linear-gradient(135deg, #f5f5f5, #e8e8e8);
+  flex-shrink: 0;
 }
-.preview-info { margin-top: 14px; }
-.preview-fname { font-weight: 600; color: var(--text-dark); margin: 4px 0; }
+.preview-info {
+  margin-top: 14px;
+  flex-shrink: 0;
+}
+.preview-fname { font-weight: 600; color: var(--text-dark); margin: 4px 0; word-break: break-all; }
 .preview-meta { font-size: 0.8em; color: var(--text-muted); }
 .preview-actions {
   display: flex;
@@ -986,6 +999,13 @@ img {
   background: transparent;
   color: var(--sakura-500);
   border: 1.5px solid var(--sakura-300);
+}
+
+/* 移动端预览：弹窗更紧凑 */
+@media (max-width: 480px) {
+  .preview-overlay { padding: 10px; }
+  .preview-box { padding: 14px; max-width: 95vw; }
+  .preview-box img { max-height: calc(90vh - 180px); }
 }
 
 /* 上传表单 */
