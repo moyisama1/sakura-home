@@ -71,9 +71,9 @@ export const works = [
 // ============ 社交链接 ============
 export const links = [
   { key: 'bilibili', icon: 'fa-brands fa-bilibili', label: 'B 站 · 实况录像', url: 'https://www.bilibili.com/video/BV1XTqKBaED9/?spm_id_from=333.337.search-card.all.click' },
-  { key: 'github', icon: 'fa-brands fa-github', label: 'GitHub · 考据笔记', url: '#' },
-  { key: 'twitter', icon: 'fa-brands fa-x-twitter', label: 'Twitter · 同人插图', url: '#' },
-  { key: 'weibo', icon: 'fa-brands fa-weibo', label: '微博 · 碎碎念', url: '#' },
+  { key: 'github', icon: 'fa-brands fa-github', label: 'GitHub · 考据笔记', url: 'https://github.com/moyisama1' },
+  { key: 'twitter', icon: 'fa-brands fa-x-twitter', label: 'Pixiv · 同人插图', url: 'https://www.pixiv.net/tags/%E9%AD%94%E6%B3%95%E5%B0%91%E5%A5%B3%E3%83%8E%E9%AD%94%E5%A5%B3%E8%A3%81%E5%88%A4' },
+//   { key: 'weibo', icon: 'fa-brands fa-weibo', label: '微博 · 碎碎念', url: '#' },
   { key: 'steam', icon: 'fa-brands fa-steam', label: 'Steam · 库', url: 'https://steamcommunity.com/profiles/76561198835418480/' },
   { key: 'email', icon: 'fa-solid fa-envelope', label: '邮箱 · 考据交流', url: 'mailto:2383899071@qq.com' },
 ];
