@@ -34,11 +34,12 @@ export default function StickerGallery() {
   // 打开预览时锁 body 滚动 + ESC 关闭
   useEffect(() => {
     if (!preview) return;
+    const prevOverflow = document.body.style.overflow; // 保存原值
     document.body.style.overflow = 'hidden';
     const onKey = (e) => { if (e.key === 'Escape') setPreview(null); };
     window.addEventListener('keydown', onKey);
     return () => {
-      document.body.style.overflow = '';
+      document.body.style.overflow = prevOverflow; // 恢复原值
       window.removeEventListener('keydown', onKey);
     };
   }, [preview]);
